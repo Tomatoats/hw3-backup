@@ -16,25 +16,31 @@ public class Main {
                 int connectionsDestroyed = in.nextInt();
                 Main mySet = new Main(totalComps+1);
                 boolean[][] connectionGraph = new boolean[totalComps+2][totalComps+2];
+                boolean[][] connectionGraph2 = new boolean[totalComps+2][totalComps+2];
                 HashMap<Integer, Boolean> ConnectionList = new HashMap<>();
                 long ans = 0;
                 long totalConnections = 0;
+                int connection1= 0;
+                int connection2= 0;
                 for (int i = 1; i < connections+1; i++){
-                    int connection1 = in.nextInt();
-                    int connection2 = in.nextInt();
+                     connection1 = in.nextInt();
+                     connection2 = in.nextInt();
                     connectionGraph[connection1][connection2] = true;
+                    connectionGraph2[connection1][connection2] = true;
                     //connectionGraph[connection2][connection1] = true;
                     ConnectionList.put(i,connectionGraph[connection1][connection2]);
                     mySet.union(connection1, connection2);
-                    System.out.printf("%d and %d are put away!\n", connection1, connection2);
+                    //System.out.printf("%d and %d are put away!\n", connection1, connection2);
                 }
                 long[] connectionNumbers = new long[connections+2];
+
                 for (int i = 0; i < connectionsDestroyed+1; i++){
+                    boolean[][] cloneList =  connectionGraph.clone();
                     for (int j = 1; j < connections+1 ;j++) {
-                        totalConnections =  countConnections(connectionGraph, connections, j, 1, 0, j);
+                        totalConnections =  countConnections(connectionGraph2, connections, j, 1, 0, j);
                         connectionNumbers[j] = totalConnections * totalConnections;
                         ans = ans + totalConnections;
-                        System.out.printf("Total connections to computer %d: %d\n", j, totalConnections);
+                        //System.out.printf("Total connections to computer %d: %d\n", j, totalConnections);
                     }
                     long compsMissing = totalComps-ans;
                     long trueAnswer = compsMissing;
@@ -43,8 +49,20 @@ public class Main {
                     }
                     System.out.printf("Connection destroyed! %d\n",trueAnswer);
                     int connectionEdgeToDestroy = in.nextInt();
-                    ConnectionList.replace( connectionEdgeToDestroy, false);
+                    ConnectionList.remove(connectionEdgeToDestroy);
+                    for (int j = 1; j < connections+1; j++){
+                        ConnectionList.replace(j, true);
+                        connectionGraph2 = connectionGraph;
+                        //System.out.printf("%b\nJust for testing, connectionGraph[2][9] for section 8 = %b\n", ConnectionList.get(j), connectionGraph[2][9]);
+                    }
+                    for (int a = 1; a < connections+2; a++){
+                        for(int b = 1; b < connections +2; b++){
+                            if (connectionGraph[a][b] == true){
+                                System.out.printf("[%d], [%d] = true\n",a,b);
+                            }
 
+                        }
+                    }
                 }
             }
         } catch (IOException | NoSuchElementException | IllegalStateException e) {
@@ -61,22 +79,23 @@ public class Main {
         for (int i=0; i<n; i++)
             parents[i] = new pair(i, 0); //0 is height 0. parent[i]'s parent is i now
     }
-    public static long countConnections(boolean[][] connectionGraph, int connections,int i, int j, long ans, int orig){
-
+    public static long countConnections(boolean[][] cloneList, int connections,int i, int j, long ans, int orig){
         //for (int p = i; p < connections +1; p++) {
         long[] connectionNumbers = new long[connections+2];
-            for (int k = j; k < connections + 2; k++) {
-                if (connectionGraph[i][k] == false) {
+        for (int k = j; k < connections + 2; k++) {
+            //System.out.printf("in the function: graph[%d][%d] =  %b\n", i,k, cloneList[i][k]);
+            if (cloneList[i][k] == false) {
                     //System.out.printf("%d does not connect with %d\n",i, k);
                     continue;
                 } else {
                     ans++;
-                    System.out.printf("%d and %d connect! Does %d connect to anything else?\n",i, k, k);
-                    connectionGraph[orig][k] = true;
-                    connectionGraph[i][k] = false;
-                    if (k == 9){}
+                    //System.out.printf("%d and %d connect! Does %d connect to anything else?\n",i, k, k);
+                    cloneList[i][k] = false;
+                    cloneList[orig][k] = true;
+                    //connectionGraph[orig][k]=true;
+                if (k == 9){}
                     else {
-                        countConnections(connectionGraph, connections, k, 1, ans, orig);
+                        countConnections(cloneList, connections, k, 1, ans, orig);
                     }
                 }
             }
