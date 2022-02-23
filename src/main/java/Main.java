@@ -15,9 +15,13 @@ public class Main {
                 int connections = in.nextInt();
                 int connectionsDestroyed = in.nextInt();
                 Main mySet = new Main(totalComps+1);
-                boolean[][] connectionGraph = new boolean[totalComps+2][totalComps+2];
-                boolean[][] connectionGraph2 = new boolean[totalComps+2][totalComps+2];
-                HashMap<Integer, Boolean> ConnectionList = new HashMap<>();
+                boolean[][] staticConnectionGraph = new boolean[totalComps+2][totalComps+2];
+                boolean[][] dynamicConnectionGraph = new boolean[totalComps+2][totalComps+2];
+                int[] connectionsLineDestroyed = new int[connectionsDestroyed+1];
+                int[] lines1 =  new int[totalComps+2];
+                int[] lines2 = new int[totalComps+2];
+                HashMap<Integer, int[][]> staticConnectionList = new HashMap<>();
+                HashMap<Integer, Boolean[][]> dynamicConnectionList = new HashMap<>();
                 long ans = 0;
                 long totalConnections = 0;
                 int connection1= 0;
@@ -25,19 +29,37 @@ public class Main {
                 for (int i = 1; i < connections+1; i++){
                      connection1 = in.nextInt();
                      connection2 = in.nextInt();
-                    connectionGraph[connection1][connection2] = true;
-                    connectionGraph2[connection1][connection2] = true;
-                    //connectionGraph[connection2][connection1] = true;
-                    ConnectionList.put(i,connectionGraph[connection1][connection2]);
-                    mySet.union(connection1, connection2);
-                    //System.out.printf("%d and %d are put away!\n", connection1, connection2);
+                     lines1[i] = connection1;
+                     lines2[i] = connection2;
+                    staticConnectionGraph[connection1][connection2] = true;
+                    dynamicConnectionGraph[connection1][connection2] = true;
+
+                    //staticConnectionGraph[connection2][connection1] = true;
+
+                    //staticConnectionList.put(i,staticConnectionGraph[connection1][connection2]);
+                    //dynamicConnectionList.put(i,dynamicConnectionGraph[connection1][connection2]);
+                    //mySet.union(connection1, connection2);
+                    System.out.printf("%d and %d are put away! this is #%d in map\n", connection1, connection2, i);
                 }
+                for (int i = 1; i < connectionsDestroyed +1; i++){
+                    int ploy = in.nextInt();
+                    connectionsLineDestroyed[i] = ploy;
+                    //System.out.printf("connection %d = ");
+                    dynamicConnectionGraph[lines1[ploy]][lines2[ploy]] = false;
+                    //dynamicConnectionList.replace(connectionsLineDestroyed[i], false);
+                    System.out.printf("connection %d is terminated. Proof? %b\n",ploy,dynamicConnectionList.get(staticConnectionList.get(ploy)));
+                }
+                System.out.printf("the real test. dynamicgraph[2][6] = %b, dynamicgraph[6][7] = %b\n", dynamicConnectionGraph[2][6],dynamicConnectionGraph[6][7]);
+                //unionization(dynamicConnectionList, mySet,connections,dynamicConnectionGraph);
+
+
+                /*
                 long[] connectionNumbers = new long[connections+2];
 
                 for (int i = 0; i < connectionsDestroyed+1; i++){
-                    boolean[][] cloneList =  connectionGraph.clone();
+                    boolean[][] cloneList =  staticConnectionGraph.clone();
                     for (int j = 1; j < connections+1 ;j++) {
-                        totalConnections =  countConnections(connectionGraph2, connections, j, 1, 0, j);
+                        totalConnections =  countConnections(staticConnectionGraph, connections, j, 1, 0, j);
                         connectionNumbers[j] = totalConnections * totalConnections;
                         ans = ans + totalConnections;
                         //System.out.printf("Total connections to computer %d: %d\n", j, totalConnections);
@@ -47,23 +69,23 @@ public class Main {
                     for (int j = 1; j < connections +1; j++){
                         trueAnswer =  trueAnswer + connectionNumbers[j];
                     }
-                    System.out.printf("Connection destroyed! %d\n",trueAnswer);
+                    System.out.printf("%d\n\n",trueAnswer);
                     int connectionEdgeToDestroy = in.nextInt();
-                    ConnectionList.remove(connectionEdgeToDestroy);
+                    staticConnectionList.remove(connectionEdgeToDestroy);
                     for (int j = 1; j < connections+1; j++){
-                        ConnectionList.replace(j, true);
-                        connectionGraph2 = connectionGraph;
-                        //System.out.printf("%b\nJust for testing, connectionGraph[2][9] for section 8 = %b\n", ConnectionList.get(j), connectionGraph[2][9]);
+                        staticConnectionList.replace(j, true);
+                        staticConnectionGraph = staticConnectionGraph;
+                        //System.out.printf("%b\nJust for testing, staticConnectionGraph[2][9] for section 8 = %b\n", staticConnectionList.get(j), staticConnectionGraph[2][9]);
                     }
                     for (int a = 1; a < connections+2; a++){
                         for(int b = 1; b < connections +2; b++){
-                            if (connectionGraph[a][b] == true){
-                                System.out.printf("[%d], [%d] = true\n",a,b);
+                            if (staticConnectionGraph[a][b] == true){
+                                //System.out.printf("[%d], [%d] = true\n",a,b);
                             }
 
                         }
                     }
-                }
+                }*/
             }
         } catch (IOException | NoSuchElementException | IllegalStateException e) {
             e.printStackTrace();
@@ -79,9 +101,27 @@ public class Main {
         for (int i=0; i<n; i++)
             parents[i] = new pair(i, 0); //0 is height 0. parent[i]'s parent is i now
     }
+    public static void unionization(HashMap<Integer, Boolean> connectionList, Main mySet,  int connections, boolean[][] connectionGraph) {
+        //connect shit together
+        for (int i = 1; i < connections+2 ; i++)
+        {
+            for (int j = 1; j < connections+2; j++)
+            {
+                //System.out.printf("i is %d, j is %d, connectionGraph[i][j] = %b\n", i, j, connectionGraph[i][j]);
+                if (connectionGraph[i][j])
+                {
+                    System.out.printf("%d and %d are connected\n", i, j);
+                    mySet.union(i, j);
+
+                }
+
+            }
+        }
+    }
     public static long countConnections(boolean[][] cloneList, int connections,int i, int j, long ans, int orig){
-        //for (int p = i; p < connections +1; p++) {
         long[] connectionNumbers = new long[connections+2];
+        /*//for (int p = i; p < connections +1; p++) {
+
         for (int k = j; k < connections + 2; k++) {
             //System.out.printf("in the function: graph[%d][%d] =  %b\n", i,k, cloneList[i][k]);
             if (cloneList[i][k] == false) {
@@ -104,7 +144,7 @@ public class Main {
                 ans++;
                 connectionNumbers[orig] = ans;
                 ans = ans * ans;
-            }
+            }*/
         return connectionNumbers[orig];
     }
 
@@ -129,20 +169,17 @@ public class Main {
             return false;
 
         // Attach tree 2 to tree 1
-        if (parents[ root1].getHeight() > parents[ root2].getHeight()) {
+        if (root1 < root2) {
             parents[ root2].setID( root1);
         }
 
         // Attach tree 1 to tree 2
-        else if (parents[root2].getHeight() > parents[root1].getHeight() ) {
+        else if (root2 < root1) {
             parents[root1].setID(root2);
         }
 
         // Same height case - just attach tree 2 to tree 1, adjust height.
-        else {
-            parents[root2].setID(root1);
-            parents[root1].incHeight();
-        }
+
 
         // We successfully did a union.
         return true;
