@@ -15,10 +15,9 @@ public class Main {
                 int connections = in.nextInt();
                 int connectionsDestroyed = in.nextInt();
                 Main mySet = new Main(totalComps+1);
-                boolean[][] connectionGraph = new boolean[totalComps+1][totalComps+1];
+                boolean[][] connectionGraph = new boolean[totalComps+2][totalComps+2];
                 HashMap<Integer, Boolean> ConnectionList = new HashMap<>();
-
-
+                long ans = 0;
                 long totalConnections = 0;
                 for (int i = 1; i < connections+1; i++){
                     int connection1 = in.nextInt();
@@ -26,13 +25,26 @@ public class Main {
                     connectionGraph[connection1][connection2] = true;
                     //connectionGraph[connection2][connection1] = true;
                     ConnectionList.put(i,connectionGraph[connection1][connection2]);
-                    boolean result = mySet.union(connection1, connection2);
+                    mySet.union(connection1, connection2);
                     System.out.printf("%d and %d are put away!\n", connection1, connection2);
                 }
-                for (int i = 0; i < connectionsDestroyed; i++){
-                    totalConnections = totalConnections + countConnections(connectionGraph, connections,1,1);
-                    long connectionEdgeToDestroy = in.nextLong();
-                    System.out.printf("Connection destroyed! %d\n",totalConnections);
+                long[] connectionNumbers = new long[connections+2];
+                for (int i = 0; i < connectionsDestroyed+1; i++){
+                    for (int j = 1; j < connections+1 ;j++) {
+                        totalConnections =  countConnections(connectionGraph, connections, j, 1, 0, j);
+                        connectionNumbers[j] = totalConnections * totalConnections;
+                        ans = ans + totalConnections;
+                        System.out.printf("Total connections to computer %d: %d\n", j, totalConnections);
+                    }
+                    long compsMissing = totalComps-ans;
+                    long trueAnswer = compsMissing;
+                    for (int j = 1; j < connections +1; j++){
+                        trueAnswer =  trueAnswer + connectionNumbers[j];
+                    }
+                    System.out.printf("Connection destroyed! %d\n",trueAnswer);
+                    int connectionEdgeToDestroy = in.nextInt();
+                    ConnectionList.replace( connectionEdgeToDestroy, false);
+
                 }
             }
         } catch (IOException | NoSuchElementException | IllegalStateException e) {
@@ -49,23 +61,32 @@ public class Main {
         for (int i=0; i<n; i++)
             parents[i] = new pair(i, 0); //0 is height 0. parent[i]'s parent is i now
     }
-    public static long countConnections(boolean[][] connectionGraph, int connections,int i, int j){
-        long ans = 0;
-        for (int p = i; p < connections +1; p++){
-             for (int k = j; k < connections +1; k++){
-                 if (connectionGraph[p][k] == false){
-                     System.out.printf("%d does not connect with %d\n",p, k);
-                     continue;
-                 }
-                 else
-                 {
-                     ans++;
-                     System.out.printf("%d and %d connect! Does %d connect to anything else?\n",p, k, k);
-                     countConnections(connectionGraph,connections,k,1);
-                 }
-             }
-        }
-        return ans;
+    public static long countConnections(boolean[][] connectionGraph, int connections,int i, int j, long ans, int orig){
+
+        //for (int p = i; p < connections +1; p++) {
+        long[] connectionNumbers = new long[connections+2];
+            for (int k = j; k < connections + 2; k++) {
+                if (connectionGraph[i][k] == false) {
+                    //System.out.printf("%d does not connect with %d\n",i, k);
+                    continue;
+                } else {
+                    ans++;
+                    System.out.printf("%d and %d connect! Does %d connect to anything else?\n",i, k, k);
+                    connectionGraph[orig][k] = true;
+                    connectionGraph[i][k] = false;
+                    if (k == 9){}
+                    else {
+                        countConnections(connectionGraph, connections, k, 1, ans, orig);
+                    }
+                }
+            }
+
+            if (ans != 0){
+                ans++;
+                connectionNumbers[orig] = ans;
+                ans = ans * ans;
+            }
+        return connectionNumbers[orig];
     }
 
     // Returns the root node of the tree storing id.
