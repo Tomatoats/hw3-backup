@@ -50,19 +50,35 @@ public class Main {
                     //dynamicConnectionList.replace(connectionsLineDestroyed[i], false);
                     //System.out.printf("connection %d is terminated. Proof? %b\n",ploy,dynamicConnectionList.get(staticConnectionList.get(ploy)));
                 }
-                System.out.printf("the real test. dynamicgraph[2][6] = %b, dynamicgraph[6][7] = %b\n", dynamicConnectionGraph[2][6],dynamicConnectionGraph[6][7]);
+               // System.out.printf("the real test. dynamicgraph[2][6] = %b, dynamicgraph[6][7] = %b\n", dynamicConnectionGraph[2][6],dynamicConnectionGraph[6][7]);
                 unionization(mySet,connections,dynamicConnectionGraph);
                 //adding them back
-                for (int i = 1; i < connectionsDestroyed +1; i++){
-                    int temp = connectionsLineDestroyed[i];
-                    dynamicConnectionGraph[lines1[temp]][lines2[temp]] = true;
-                    mySet.union(lines1[temp],lines2[temp]);
-                    if (mySet.union(lines1[temp],lines2[temp]) == false){
-                        System.out.printf("Hey it worked! connnection[6][7] = %b, connection[2][6] = %b\n", dynamicConnectionGraph[6][7], dynamicConnectionGraph[2][6]);
+                long total = 0;
+                int[] connectedPointers = connectedness(mySet,totalComps);
+                for (int j = 1; j < totalComps+2; j++){
+                    if (connectedPointers[j] != 0){
+                        total = total + (connectedPointers[j] * connectedPointers[j]);
                     }
                 }
-                //counting the numbers up:
+                System.out.printf("Total connectivity: %d \n",total);
+                for (int i = 1; i < connectionsDestroyed +1; i++){
+                     total = 0;
+                    int temp = connectionsLineDestroyed[i];
+                    //dynamicConnectionGraph[lines1[temp]][lines2[temp]] = true;
+                    mySet.union(lines1[temp],lines2[temp]);
+                    connectedPointers = connectedness(mySet,totalComps);
+                    for (int j = 1; j < totalComps+2; j++){
+                        if (connectedPointers[j] != 0){
+                            total = total + (connectedPointers[j] * connectedPointers[j]);
+                        }
+                    }
+                    System.out.printf("Total connectivity: %d \n",total);
+                    //if (mySet.union(lines1[temp],lines2[temp]) == false){
+                    //System.out.printf("Hey it worked! connnection[6][7] = %b, connection[2][6] = %b\n", dynamicConnectionGraph[6][7], dynamicConnectionGraph[2][6]);
+                    //}
+                }
 
+                //counting the numbers up:
 
                 /*
                 long[] connectionNumbers = new long[connections+2];
@@ -128,6 +144,16 @@ public class Main {
 
             }
         }
+    }
+    public static int[] connectedness(Main mySet,int totalComps){
+        int[] connectedPointers = new int[totalComps+2];
+        for (int i = 1; i < totalComps + 1; i++){
+            int root = mySet.find(i);
+            System.out.printf("i is %d, root of %d is %d\n", i, i, root);
+            connectedPointers[root]++;
+        }
+
+        return connectedPointers;
     }
     public static long countConnections(boolean[][] cloneList, int connections,int i, int j, long ans, int orig){
         long[] connectionNumbers = new long[connections+2];
