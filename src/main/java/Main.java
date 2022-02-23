@@ -15,22 +15,23 @@ public class Main {
                 int connections = in.nextInt();
                 int connectionsDestroyed = in.nextInt();
                 Main mySet = new Main(totalComps+1);
+                long[] arrayAnswers = new long[connectionsDestroyed+2];
                 boolean[][] staticConnectionGraph = new boolean[totalComps+2][totalComps+2];
                 boolean[][] dynamicConnectionGraph = new boolean[totalComps+2][totalComps+2];
                 int[] connectionsLineDestroyed = new int[connectionsDestroyed+1];
                 int[] lines1 =  new int[totalComps+2];
                 int[] lines2 = new int[totalComps+2];
-                HashMap<Integer, int[][]> staticConnectionList = new HashMap<>();
-                HashMap<Integer, Boolean[][]> dynamicConnectionList = new HashMap<>();
+                //HashMap<Integer, int[][]> staticConnectionList = new HashMap<>();
+                //HashMap<Integer, Boolean[][]> dynamicConnectionList = new HashMap<>();
                 long ans = 0;
                 long totalConnections = 0;
                 int connection1= 0;
                 int connection2= 0;
                 for (int i = 1; i < connections+1; i++){
-                     connection1 = in.nextInt();
-                     connection2 = in.nextInt();
-                     lines1[i] = connection1;
-                     lines2[i] = connection2;
+                    connection1 = in.nextInt();
+                    connection2 = in.nextInt();
+                    lines1[i] = connection1;
+                    lines2[i] = connection2;
                     staticConnectionGraph[connection1][connection2] = true;
                     dynamicConnectionGraph[connection1][connection2] = true;
 
@@ -47,10 +48,20 @@ public class Main {
                     //System.out.printf("connection %d = ");
                     dynamicConnectionGraph[lines1[ploy]][lines2[ploy]] = false;
                     //dynamicConnectionList.replace(connectionsLineDestroyed[i], false);
-                    System.out.printf("connection %d is terminated. Proof? %b\n",ploy,dynamicConnectionList.get(staticConnectionList.get(ploy)));
+                    //System.out.printf("connection %d is terminated. Proof? %b\n",ploy,dynamicConnectionList.get(staticConnectionList.get(ploy)));
                 }
                 System.out.printf("the real test. dynamicgraph[2][6] = %b, dynamicgraph[6][7] = %b\n", dynamicConnectionGraph[2][6],dynamicConnectionGraph[6][7]);
-                //unionization(dynamicConnectionList, mySet,connections,dynamicConnectionGraph);
+                unionization(mySet,connections,dynamicConnectionGraph);
+                //adding them back
+                for (int i = 1; i < connectionsDestroyed +1; i++){
+                    int temp = connectionsLineDestroyed[i];
+                    dynamicConnectionGraph[lines1[temp]][lines2[temp]] = true;
+                    mySet.union(lines1[temp],lines2[temp]);
+                    if (mySet.union(lines1[temp],lines2[temp]) == false){
+                        System.out.printf("Hey it worked! connnection[6][7] = %b, connection[2][6] = %b\n", dynamicConnectionGraph[6][7], dynamicConnectionGraph[2][6]);
+                    }
+                }
+                //counting the numbers up:
 
 
                 /*
@@ -101,7 +112,7 @@ public class Main {
         for (int i=0; i<n; i++)
             parents[i] = new pair(i, 0); //0 is height 0. parent[i]'s parent is i now
     }
-    public static void unionization(HashMap<Integer, Boolean> connectionList, Main mySet,  int connections, boolean[][] connectionGraph) {
+    public static void unionization(Main mySet,  int connections, boolean[][] connectionGraph) {
         //connect shit together
         for (int i = 1; i < connections+2 ; i++)
         {
