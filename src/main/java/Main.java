@@ -9,120 +9,83 @@ public class Main {
 
 
     public static void main(String[] args) {
-        try (Scanner in = new Scanner(Paths.get("in.txt"))) {
-            while (in.hasNext()) {
+        try (Scanner in = new Scanner(Paths.get("in.txt")))
+        {
+            //take in the inputs
+            while (in.hasNext())
+            {
                 int totalComps = in.nextInt();
                 int connections = in.nextInt();
                 int connectionsDestroyed = in.nextInt();
+                //set up the data structures needed
+
                 Main mySet = new Main(totalComps+1);
-                long[] arrayAnswers = new long[connectionsDestroyed+2];
-                boolean[][] staticConnectionGraph = new boolean[totalComps+2][totalComps+2];
-                boolean[][] dynamicConnectionGraph = new boolean[totalComps+2][totalComps+2];
+                boolean[][] connectionGraph = new boolean[totalComps+2][totalComps+2];
                 int[] connectionsLineDestroyed = new int[connectionsDestroyed+1];
                 int[] lines1 =  new int[totalComps+2];
                 int[] lines2 = new int[totalComps+2];
-                //HashMap<Integer, int[][]> staticConnectionList = new HashMap<>();
-                //HashMap<Integer, Boolean[][]> dynamicConnectionList = new HashMap<>();
-                long ans = 0;
-                long totalConnections = 0;
+
+                //iinitialize variables needed later
                 int connection1= 0;
                 int connection2= 0;
-                for (int i = 1; i < connections+1; i++){
+
+                for (int i = 1; i < connections+1; i++)
+                {
+                    //take in input and put em in the lines to get the numbers later
                     connection1 = in.nextInt();
                     connection2 = in.nextInt();
                     lines1[i] = connection1;
                     lines2[i] = connection2;
-                    staticConnectionGraph[connection1][connection2] = true;
-                    dynamicConnectionGraph[connection1][connection2] = true;
-
-                    //staticConnectionGraph[connection2][connection1] = true;
-
-                    //staticConnectionList.put(i,staticConnectionGraph[connection1][connection2]);
-                    //dynamicConnectionList.put(i,dynamicConnectionGraph[connection1][connection2]);
-                    //mySet.union(connection1, connection2);
-                    //System.out.printf("%d and %d are put away! this is #%d in map\n", connection1, connection2, i);
+                    connectionGraph[connection1][connection2] = true;
                 }
-                for (int i = 1; i < connectionsDestroyed +1; i++){
+                //take out the connections one by one
+                for (int i = 1; i < connectionsDestroyed +1; i++)
+                {
                     int ploy = in.nextInt();
                     connectionsLineDestroyed[i] = ploy;
-                    //System.out.printf("connection %d = ");
-                    dynamicConnectionGraph[lines1[ploy]][lines2[ploy]] = false;
-                    //dynamicConnectionList.replace(connectionsLineDestroyed[i], false);
-                    //System.out.printf("connection %d is terminated. Proof? %b\n",ploy,dynamicConnectionList.get(staticConnectionList.get(ploy)));
+                    connectionGraph[lines1[ploy]][lines2[ploy]] = false;
                 }
-                //System.out.printf("the real test. dynamicgraph[2][6] = %b, dynamicgraph[6][7] = %b\n", dynamicConnectionGraph[2][6],dynamicConnectionGraph[6][7]);
-                unionization(mySet,totalComps,dynamicConnectionGraph);
-                //System.out.printf("the real test. dynamicgraph[2][6] = %b, dynamicgraph[6][7] = %b, find 7 = %d \n", dynamicConnectionGraph[2][6],dynamicConnectionGraph[6][7], mySet.find(7));
-                //adding them back
+                //set up the base connections!
+                unionization(mySet,totalComps,connectionGraph);
+                //set up variables needed to find connectedness
                 long[] allTotals = new long[connectionsDestroyed+2];
                 int counter = 0;
                 long total = 0;
                 int[] connectedPointers = connectedness(mySet,totalComps);
-                for (int j = 1; j < totalComps+2; j++){
-                    if (connectedPointers[j] != 0){
+                //add them up
+                for (int j = 1; j < totalComps+2; j++)
+                {
+                    if (connectedPointers[j] != 0)
+                    {
                         total = total + (connectedPointers[j] * connectedPointers[j]);
                     }
                 }
-                System.out.printf("Total connectivity: %d \n",total);
+                //add the answer to the arry to print later
                 counter++;
                 allTotals[counter] = total;
-                for (int i = connectionsDestroyed; i > 0; i--){
+                //do the same thing now for every connection I gotta do
+                for (int i = connectionsDestroyed; i > 0; i--)
+                {
                      total = 0;
                     int temp = connectionsLineDestroyed[i];
-                    //System.out.printf("temp = %d, lines1[temp] = %d, lines2[temp] = %d\nlines1[temp] should = 6, and lines2[temp] should = 7\n",temp,lines1[temp],lines2[temp]);
-                    //dynamicConnectionGraph[lines1[temp]][lines2[temp]] = true;
+
                     mySet.union(lines1[temp],lines2[temp]);
                     connectedPointers = connectedness(mySet,totalComps);
-                    for (int j = 1; j < totalComps+2; j++){
-                        if (connectedPointers[j] != 0){
+                    for (int j = 1; j < totalComps+2; j++)
+                    {
+                        if (connectedPointers[j] != 0)
+                        {
                             total = total + (connectedPointers[j] * connectedPointers[j]);
                         }
                     }
                     counter++;
                     allTotals[counter] = total;
-                    //if (mySet.union(lines1[temp],lines2[temp]) == false){
-                    //System.out.printf("Hey it worked! connnection[6][7] = %b, connection[2][6] = %b\n", dynamicConnectionGraph[6][7], dynamicConnectionGraph[2][6]);
-                    //}
                 }
-                for (int i = connectionsDestroyed+1; i > 0; i--){
+                //print out the totals in proper order
+                for (int i = connectionsDestroyed+1; i > 0; i--)
+                {
                     System.out.printf("%d\n", allTotals[i]);
                 }
-
-                //counting the numbers up:
-
-                /*
-                long[] connectionNumbers = new long[connections+2];
-
-                for (int i = 0; i < connectionsDestroyed+1; i++){
-                    boolean[][] cloneList =  staticConnectionGraph.clone();
-                    for (int j = 1; j < connections+1 ;j++) {
-                        totalConnections =  countConnections(staticConnectionGraph, connections, j, 1, 0, j);
-                        connectionNumbers[j] = totalConnections * totalConnections;
-                        ans = ans + totalConnections;
-                        //System.out.printf("Total connections to computer %d: %d\n", j, totalConnections);
-                    }
-                    long compsMissing = totalComps-ans;
-                    long trueAnswer = compsMissing;
-                    for (int j = 1; j < connections +1; j++){
-                        trueAnswer =  trueAnswer + connectionNumbers[j];
-                    }
-                    System.out.printf("%d\n\n",trueAnswer);
-                    int connectionEdgeToDestroy = in.nextInt();
-                    staticConnectionList.remove(connectionEdgeToDestroy);
-                    for (int j = 1; j < connections+1; j++){
-                        staticConnectionList.replace(j, true);
-                        staticConnectionGraph = staticConnectionGraph;
-                        //System.out.printf("%b\nJust for testing, staticConnectionGraph[2][9] for section 8 = %b\n", staticConnectionList.get(j), staticConnectionGraph[2][9]);
-                    }
-                    for (int a = 1; a < connections+2; a++){
-                        for(int b = 1; b < connections +2; b++){
-                            if (staticConnectionGraph[a][b] == true){
-                                //System.out.printf("[%d], [%d] = true\n",a,b);
-                            }
-
-                        }
-                    }
-                }*/
             }
         } catch (IOException | NoSuchElementException | IllegalStateException e) {
             e.printStackTrace();
@@ -131,68 +94,35 @@ public class Main {
     }
     private  pair[] parents;
 
-    public Main(int n) {
-
-        // All nodes start as leaf nodes.
-        parents = new pair[n];
-        for (int i=0; i<n; i++)
-            parents[i] = new pair(i, 0); //0 is height 0. parent[i]'s parent is i now
-    }
     public static void unionization(Main mySet,  int totalComps, boolean[][] connectionGraph) {
         //connect shit together
         for (int i = 1; i < totalComps+2 ; i++)
         {
             for (int j = 1; j < totalComps+2; j++)
             {
-                //System.out.printf("i is %d, j is %d, connectionGraph[i][j] = %b\n", i, j, connectionGraph[i][j]);
                 if (connectionGraph[i][j])
                 {
-                    //System.out.printf("%d and %d are connected\n", i, j);
                     mySet.union(i, j);
-
                 }
-
             }
         }
     }
     public static int[] connectedness(Main mySet,int totalComps){
+        //see how many items are connected to a root, and count em up
         int[] connectedPointers = new int[totalComps+2];
         for (int i = 1; i < totalComps + 1; i++){
             int root = mySet.find(i);
-            //System.out.printf("i is %d, root of %d is %d\n", i, i, root);
             connectedPointers[root]++;
         }
-
         return connectedPointers;
     }
-    public static long countConnections(boolean[][] cloneList, int connections,int i, int j, long ans, int orig){
-        long[] connectionNumbers = new long[connections+2];
-        /*//for (int p = i; p < connections +1; p++) {
+    //everything from here on out is borrowed code from the disjoint set java file in syllabus, only edit is in union
+    public Main(int n) {
 
-        for (int k = j; k < connections + 2; k++) {
-            //System.out.printf("in the function: graph[%d][%d] =  %b\n", i,k, cloneList[i][k]);
-            if (cloneList[i][k] == false) {
-                    //System.out.printf("%d does not connect with %d\n",i, k);
-                    continue;
-                } else {
-                    ans++;
-                    //System.out.printf("%d and %d connect! Does %d connect to anything else?\n",i, k, k);
-                    cloneList[i][k] = false;
-                    cloneList[orig][k] = true;
-                    //connectionGraph[orig][k]=true;
-                if (k == 9){}
-                    else {
-                        countConnections(cloneList, connections, k, 1, ans, orig);
-                    }
-                }
-            }
-
-            if (ans != 0){
-                ans++;
-                connectionNumbers[orig] = ans;
-                ans = ans * ans;
-            }*/
-        return connectionNumbers[orig];
+        // All nodes start as leaf nodes.
+        parents = new pair[n];
+        for (int i=0; i<n; i++)
+            parents[i] = new pair(i, 0); //0 is height 0. parent[i]'s parent is i now
     }
 
     // Returns the root node of the tree storing id.
@@ -216,34 +146,25 @@ public class Main {
             return false;
 
         // Attach tree 2 to tree 1
+        // hey so i changed it so it just always finds the smallest number for roots
         if (root1 < root2) {
             parents[ root2].setID( root1);
         }
 
         // Attach tree 1 to tree 2
+        //hey so i changed it so it just always find the smallest number for roots
         else if (root2 < root1) {
             parents[root1].setID(root2);
         }
-
-        // Same height case - just attach tree 2 to tree 1, adjust height.
-
 
         // We successfully did a union.
         return true;
     }
 
-    // Just represents this object as a list of each node's parent.
-    public String toString() {
-
-        String ans = "";
-        for (int i=0; i<parents.length; i++)
-            ans = ans + "(" + i + ", " + parents[i].getID() + ") ";
-        return ans;
-    }
 }
 
 class pair {
-
+    //you could argue i don't need height for this but i don't wanna fuck with that
     private int ID;
     private int height;
 
